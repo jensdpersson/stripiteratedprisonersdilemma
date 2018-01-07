@@ -1,0 +1,255 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>STRIP Iterated Prisoner's Dilemma</title>
+    <style type="text/css">
+      div.box {
+         border: 1px solid gray;
+	 background: lightgrey;
+      }
+      div {
+         margin: 5px;
+	 padding: 5px;
+      }
+    </style>
+    <script type="text/javascript">
+      var wardrobe = [
+          'Chapeau-Claque', 
+          'Y-Fronts', 
+          'Mankini', 
+          'Bro', 
+          'Bra', 
+          'Leggings', 
+          'Ulster', 
+          'Left sock', 
+          'Right Sock', 
+          'Middle sock', 
+          'Thumb', 
+          'Shirt', 
+          'Skirt', 
+          'Burqa', 
+          'Urban Sombrero', 
+          'Belt', 
+          'Bandana', 
+          'Body paint', 
+          'High heels', 
+          'Jacket', 
+          'Tux', 
+          'Bermudas', 
+          'Longkalsongs', 
+          'Pinky ring', 
+          'Chaps', 
+          'Strap-on', 
+          'Vest', 
+          'Ammo belt', 
+          'Utility belt', 
+          'European carry-all',
+          'Pants',
+          'Pantaloons',
+          'Bracelets',
+          'Lip plate',
+          'Nose ring',
+          'Dress',
+          'One-piece',
+          'Beret',
+          'T-shirt',
+          'Jaquette',
+          'Frock coat',
+          'Penguin suit',
+          'Monofin',
+          'Snorkel',
+          'Jeans',
+          'Stay-ups',
+          'Pullover',
+          'Sweater',
+          'Windbreaker',
+          'Poncho',
+          'IR goggles',
+          'Oculus Rift',
+          'GPS Watch',
+          'Suspenders'
+      ];
+
+      function $(id){
+        return document.getElementById(id);
+      }
+      
+      function foreach(list){
+          return function(f){
+             for(var i=0;i != list.length;i++){
+                 f(list[i]);
+             }
+          };
+      }
+
+      function opponentResponse() {
+          var opp = $("opponent");
+          var strategy = opp.options[opp.selectedIndex].value;
+          switch(strategy){
+            case 'a': return pick([true, false]);
+            case 'b': return false;
+            case 'c': return true;
+          }
+          return ;
+      }
+
+      var lastQuestion = 0;
+
+      function respond(playerRats){
+         var comradeRats = opponentResponse();
+         var outcome = "";
+         if(playerRats){
+	   if(comradeRats){
+               //Both cooperate 1-1
+               outcome = "1-1";
+               undress("protagonistWorn");
+               undress("opponentWorn");
+	   } else {
+	     //Player rats, other maintains, 
+             outcome = "3-0";
+             undress("opponentWorn", "protagonistWorn");
+	   }
+	 } else {
+	   if(comradeRats){
+	     //Other rats, player maintains, 
+             outcome = "0-3";
+             undress("protagonistWorn", "opponentWorn");
+	   } else {
+             //Both maintain 
+             outcome = "2-2";
+	   }
+	 }
+	 var history = $("questionHistoryTemplate");
+         var newq = history.cloneNode(true);
+         newq.style.display = '';
+         newq.removeAttribute("id");
+         lastQuestion = lastQuestion + 1;
+         history.parentNode.appendChild(newq);
+         td(newq, lastQuestion);
+         td(newq, playerRats ? "rat" : "maintain");
+         td(newq, comradeRats ? "rat" : "maintain");
+         td(newq, outcome);
+         
+         $("count").innerHTML = lastQuestion + 1;
+         
+         var player = $("protagonistWorn");
+         var other = $("opponentWorn");
+         if(player.childNodes.length == 0){
+             if(other.childNodes.length == 0){
+                 alert("A tie!");
+             } else {
+                 alert("You lose");
+             } 
+         } else if (other.childNodes.length == 0){
+             alert("You win");
+         }
+      }
+
+      function undress(wearer, newwearer){
+          var ul = $(wearer);
+          var remove = ul.lastChild;
+          ul.removeChild(remove);
+          if(newwearer){
+              var ul2 = $(newwearer);
+              ul2.appendChild(remove);
+          }
+      }
+
+      function td(parent, text){
+          var sub = document.createElement("td");
+          sub.appendChild(document.createTextNode(text));
+          parent.appendChild(sub);
+      }
+
+    function pick(list){
+        var len = list.length - 1;
+        var index = Math.round(Math.random() * len);
+        return list[index];
+    }
+      
+    function reload(){
+        foreach(['protagonistWorn', 'opponentWorn'])(
+            function(id){
+                var elm = $(id);
+                while(elm.firstChild){
+                    elm.removeChild(elm.firstChild);
+                }
+                for(var c = 0; c != 10; c++){
+                  var plagg = pick(wardrobe);
+                  var li = document.createElement('li');
+                  li.appendChild(document.createTextNode(plagg));
+                  elm.appendChild(li);
+               }
+          }
+         );
+         var history = $("questionHistoryTemplate");
+         while(history.nextSibling){
+             history.parentNode.removeChild(history.nextSibling);
+         }
+         lastQuestion = 0;
+         $("count").innerHTML = "1";
+    }
+    </script>
+  </head>
+  <body onload="reload()">
+    <div class="box">
+      <h1><i>Strip</i> Iterated Prisoner's Dilemma</h1>
+      <div>
+	This site exists to amend the <a href="http://xkcd.com/696/">lack of 
+            strip versions</a> of the game theoretic problem 
+            <a href="https://en.wikipedia.org/wiki/Prisoner%27s_dilemma#The_iterated_prisoners.27_dilemma">
+                the Prisoner's Dilemma. </a> The basic scenario is a slight 
+                abberation from the original. You can reload the game by choosing
+                a new opponent. 
+      </div>
+      <div>
+	Anyway, you and 
+	<select id="opponent" onchange="reload()">
+	  <option value="a">Philip Morell, the cat burglar</option>
+	  <option value="b">Dynamite Harry, the safe-buster</option>
+	  <option value="c">Rutger J&ouml;n&aring;ker, the chemist</option>
+	</select> are both captured by the police after a failed crime of some sort. You are kept in isolation in a cold cell from each other and the police asks you both a lot of questions, offering you both the same deal for each question: if you rat on your comrade-in-crime and your comrade-in-crime stays silent your comrade has to give you an item of clothing. If you both rat both will have to remove an item of clothing. If you stay silent and your comrade-in-crime rats, you must give up an item of clothing. If neither cooperates neither has to give up anything. Then, at dawn, when you are both executed, whoever has the most clothes wins. 
+    </div>
+      <div>
+      So, in response to question number <span style="font-weight:bold" id="count">1</span>, 
+      do you <button onclick="respond(true)">rat on your comrade-in-crime</button>
+      or <button onclick="respond(false)">stay silent</button>?
+      </div>
+      
+      <table border="1" style="width:100%">
+          <tr>
+              <th>You are currently wearing</th>
+              <th>Question history</th>
+              <th>Your comrade-in-crime is currently wearing</th>
+          </tr>
+          <tr>
+              <td>
+	
+	<ul id="protagonistWorn">
+	  
+	</ul>
+      </span></td>
+              <td style="vertical-align: top">
+                  <table border="1" style="width:100%">
+                      <tr>
+                          <th>Question #</th>
+                          <th>Your response</th>
+                          <th>Comrade's response</th>
+                          <th>Outcome</th>
+                      </tr>
+                      <tr id="questionHistoryTemplate" style="display:none">
+                          
+                      </tr>
+                  </table>    
+              </td>
+              
+              <td>
+      <span>
+	
+	<ul id="opponentWorn">
+	  
+	</ul></span></td>
+        </tr>
+      </table>
+    </div>
+  </body>
+</html>
